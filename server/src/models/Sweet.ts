@@ -5,6 +5,8 @@ export interface ISweet extends Document {
   category: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
+  description?: string;
 }
 
 const SweetSchema = new Schema<ISweet>({
@@ -12,6 +14,8 @@ const SweetSchema = new Schema<ISweet>({
   category: { type: String, required: true },
   price: { type: Number, required: true, min: 0 },
   quantity: { type: Number, required: true, min: 0 },
+  imageUrl: { type: String, default: '' },
+  description: { type: String, default: '' },
 });
 
 export default mongoose.model<ISweet>('Sweet', SweetSchema);

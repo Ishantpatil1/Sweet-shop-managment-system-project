@@ -4,6 +4,9 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import authRouter from './routes/auth';
 import sweetsRouter from './routes/sweets';
+import purchasesRouter from './routes/purchases';
+import adminRouter from './routes/admin';
+import path from 'path';
 import bcrypt from 'bcryptjs';
 import User from './models/User';
 
@@ -12,9 +15,13 @@ dotenv.config();
 const app = express();
 app.use(cors());
 app.use(express.json());
+// Serve uploads statically
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 app.use('/api/auth', authRouter);
 app.use('/api/sweets', sweetsRouter);
+app.use('/api/purchases', purchasesRouter);
+app.use('/api/admin', adminRouter);
 
 const PORT = process.env.PORT || 4000;
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sweet_shop';

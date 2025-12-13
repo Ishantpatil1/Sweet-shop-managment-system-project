@@ -17,13 +17,13 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      const res = await api.post('/api/auth/login', { email, password });
+      const res = await api.post('/api/auth/login', { email: email.trim().toLowerCase(), password });
       const token = res.data.token;
       localStorage.setItem('token', token);
 
       // Decode JWT to get role
       const payload = JSON.parse(atob(token.split('.')[1]));
-      setUser({ userId: payload.userId, role: payload.role });
+      setUser({ userId: payload.userId, role: payload.role, email: payload.email, name: payload.name });
 
       // Redirect based on role
       if (payload.role === 'admin') {

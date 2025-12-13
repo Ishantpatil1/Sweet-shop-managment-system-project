@@ -21,7 +21,7 @@ export default function Register() {
     try {
       // For this assignment, we'll register with role in the request
       // Backend should accept role from frontend
-      await api.post('/api/auth/register', { name, email, password, role });
+      await api.post('/api/auth/register', { name: name.trim(), email: email.trim().toLowerCase(), password, role });
       setMessage('✨ Account created! Redirecting to login...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {

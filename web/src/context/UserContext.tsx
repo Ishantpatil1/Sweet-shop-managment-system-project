@@ -4,6 +4,8 @@ import api from './api';
 interface User {
   userId: string;
   role: 'admin' | 'user';
+  email?: string;
+  name?: string;
 }
 
 interface UserContextType {
@@ -23,7 +25,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        setUser({ userId: payload.userId, role: payload.role });
+        setUser({ userId: payload.userId, role: payload.role, email: payload.email, name: payload.name });
       } catch (err) {
         localStorage.removeItem('token');
       }

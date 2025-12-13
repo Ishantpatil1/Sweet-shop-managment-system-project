@@ -15,6 +15,7 @@ type Sweet = {
   category: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
 };
 
 export default function Storefront() {
@@ -26,6 +27,10 @@ export default function Storefront() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [purchaseModal, setPurchaseModal] = useState<{ open: boolean; sweet?: Sweet }>({ open: false });
   const [quantity, setQuantity] = useState(1);
+  const [deliveryNote, setDeliveryNote] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const categories = ['All', 'Indian', 'Chocolate', 'Dry Fruits', 'Cakes'];
@@ -47,6 +52,9 @@ export default function Storefront() {
       return;
     }
     load();
+    // Prefill contact info from user
+    setContactName(user?.name || '');
+    setContactEmail(user?.email || '');
   }, [user, navigate]);
 
   const filteredSweets = sweets.filter((sweet) => {
@@ -58,18 +66,38 @@ export default function Storefront() {
 
   const handlePurchase = async () => {
     if (!purchaseModal.sweet) return;
+    // Validation
+    if (quantity < 1) {
+      alert('Quantity must be at least 1');
+      return;
+    }
+    if (quantity > purchaseModal.sweet.quantity) {
+      alert('Quantity exceeds available stock');
+      return;
+    }
+    setSubmitting(true);
     try {
-      await api.post(`/api/sweets/${purchaseModal.sweet._id}/purchase`, { quantity });
+      // Use purchases API
+      await api.post(`/api/purchases`, {
+        sweetId: purchaseModal.sweet._id,
+        quantity,
+        deliveryNote,
+        contactName,
+        contactEmail,
+      });
       setSweets((prev) =>
         prev.map((s) =>
           s._id === purchaseModal.sweet!._id ? { ...s, quantity: s.quantity - quantity } : s,
         ),
       );
-      setSuccessMessage(`🎉 Sweet choice! You ordered ${quantity} ${purchaseModal.sweet.name}(s)`);
+      setSuccessMessage('Purchase successful 🎉');
       setPurchaseModal({ open: false });
+      setDeliveryNote('');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
       alert('Purchase failed');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -185,7 +213,12 @@ export default function Storefront() {
                   whileHover={{ y: -4 }}
                 >
                   <SweetCard
-                    {...sweet}
+                    id={sweet._id}
+                    name={sweet.name}
+                    category={sweet.category}
+                    price={sweet.price}
+                    quantity={sweet.quantity}
+                    imageUrl={sweet.imageUrl}
                     onPurchase={() => {
                       setPurchaseModal({ open: true, sweet });
                       setQuantity(1);
@@ -208,8 +241,12 @@ export default function Storefront() {
             <button onClick={() => setPurchaseModal({ open: false })} className="btn btn-ghost">
               Cancel
             </button>
-            <button onClick={handlePurchase} className="btn btn-primary">
-              Complete Purchase
+            <button
+              onClick={handlePurchase}
+              className="btn btn-primary"
+              disabled={submitting || (purchaseModal.sweet ? purchaseModal.sweet.quantity === 0 : false)}
+            >
+              {submitting ? 'Processing...' : 'Complete Purchase'}
             </button>
           </>
         }
@@ -229,6 +266,36 @@ export default function Storefront() {
                 value={quantity}
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 className="w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#1F1F1F] mb-2">Your Name</label>
+              <input
+                type="text"
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                className="w-full"
+                placeholder="Your full name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#1F1F1F] mb-2">Your Email</label>
+              <input
+                type="email"
+                value={contactEmail}
+                onChange={(e) => setContactEmail(e.target.value)}
+                className="w-full"
+                placeholder="you@example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-[#1F1F1F] mb-2">Delivery Note (optional)</label>
+              <textarea
+                value={deliveryNote}
+                onChange={(e) => setDeliveryNote(e.target.value)}
+                className="w-full"
+                rows={3}
+                placeholder="Any special instructions?"
               />
             </div>
             <div className="bg-[#FFF3E0] p-3 rounded-lg">

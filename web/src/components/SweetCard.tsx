@@ -6,6 +6,7 @@ interface SweetCardProps {
   category: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
   onPurchase: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
@@ -18,6 +19,7 @@ export default function SweetCard({
   category,
   price,
   quantity,
+  imageUrl,
   onPurchase,
   onEdit,
   onDelete,
@@ -28,10 +30,14 @@ export default function SweetCard({
 
   return (
     <div className="card group hover:shadow-lg transition-all duration-300">
-      {/* Image placeholder with gradient */}
-      <div className="bg-gradient-to-br from-[#F4A261] to-[#E9C46A] rounded-xl h-40 mb-4 flex items-center justify-center text-white text-3xl">
-        🍬
-      </div>
+      {/* Image */}
+      {imageUrl ? (
+        <img src={imageUrl} alt={name} className="rounded-xl h-40 w-full object-cover mb-4" />
+      ) : (
+        <div className="bg-gradient-to-br from-[#F4A261] to-[#E9C46A] rounded-xl h-40 mb-4 flex items-center justify-center text-white text-3xl">
+          🍬
+        </div>
+      )}
 
       {/* Content */}
       <h3 className="text-lg font-bold text-[#1F1F1F] mb-1">{name}</h3>

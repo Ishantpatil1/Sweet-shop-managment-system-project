@@ -9,6 +9,17 @@ import Modal from '../components/Modal';
 import { useUser } from '../context/UserContext';
 import api from '../api';
 
+type Purchase = {
+  _id: string;
+  userId: { name?: string; email: string } | null;
+  sweetName: string;
+  quantity: number;
+  totalPrice: number;
+  purchasedAt: string;
+  contactName?: string;
+  contactEmail?: string;
+};
+
 type Sweet = {
   _id: string;
   name: string;
@@ -41,11 +52,17 @@ export default function AdminDashboard() {
   const { user, setUser } = useUser();
   const [sweets, setSweets] = useState<Sweet[]>([]);
   const [loading, setLoading] = useState(true);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [metrics, setMetrics] = useState<{ totalSweets: number; totalStock: number; lowStockCount: number; totalPurchases: number } | null>(null);
 
   const load = async () => {
     try {
       const res = await api.get('/api/sweets');
       setSweets(res.data);
+      const m = await api.get('/api/admin/metrics');
+      setMetrics(m.data);
+      const pur = await api.get('/api/purchases');
+      setPurchases(pur.data);
     } catch (err) {
       console.error('Failed to load sweets');
     } finally {
@@ -94,15 +111,16 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8"
         >
-          <StatCard title="Total Sweets" value={totalSweets} icon="📦" color="primary" />
-          <StatCard title="In Stock" value={totalStock} icon="🏪" color="accent" />
+          <StatCard title="Total Sweets" value={metrics?.totalSweets ?? totalSweets} icon="📦" color="primary" />
+          <StatCard title="In Stock" value={metrics?.totalStock ?? totalStock} icon="🏪" color="accent" />
           <StatCard
             title="Low Stock Alerts"
-            value={lowStockCount}
+            value={metrics?.lowStockCount ?? lowStockCount}
             icon="⚠️"
             color="secondary"
             trend={{ value: lowStockCount > 0 ? 1 : 0, direction: lowStockCount > 0 ? 'up' : 'down' }}
           />
+          <StatCard title="Total Purchases" value={metrics?.totalPurchases ?? purchases.length} icon="🧾" color="primary" />
         </motion.div>
 
         {/* Charts Section */}
@@ -193,6 +211,45 @@ export default function AdminDashboard() {
               ))}
             </div>
           )}
+        </motion.div>
+
+        {/* Purchase History */}
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="mt-10">
+          <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6">🧾 Purchase History</h2>
+          <div className="card overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead>
+                <tr className="text-[#6B6B6B]">
+                  <th className="py-3 px-4">Purchase ID</th>
+                  <th className="py-3 px-4">User Name</th>
+                  <th className="py-3 px-4">User Email</th>
+                  <th className="py-3 px-4">Sweet Name</th>
+                  <th className="py-3 px-4">Quantity</th>
+                  <th className="py-3 px-4">Total Price</th>
+                  <th className="py-3 px-4">Date & Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {purchases.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-6 px-4 text-center text-[#6B6B6B]">No purchases yet</td>
+                  </tr>
+                ) : (
+                  purchases.map((p) => (
+                    <tr key={p._id} className="border-t border-[#E8E1D8]">
+                      <td className="py-3 px-4 text-sm">{p._id}</td>
+                      <td className="py-3 px-4">{p.userId?.name || p.contactName || '—'}</td>
+                      <td className="py-3 px-4">{p.userId?.email || p.contactEmail || '—'}</td>
+                      <td className="py-3 px-4">{p.sweetName}</td>
+                      <td className="py-3 px-4">{p.quantity}</td>
+                      <td className="py-3 px-4">₹{p.totalPrice.toFixed(2)}</td>
+                      <td className="py-3 px-4">{new Date(p.purchasedAt).toLocaleString()}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </motion.div>
       </div>
     </div>

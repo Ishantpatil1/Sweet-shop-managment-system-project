@@ -29,7 +29,11 @@ export default function ManageSweets() {
   const [actionType, setActionType] = useState<'add' | 'edit' | 'restock'>('add');
   const [selectedSweet, setSelectedSweet] = useState<Sweet | null>(null);
   const [restockAmount, setRestockAmount] = useState('10');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [description, setDescription] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   const load = async () => {
     try {
@@ -78,23 +82,59 @@ export default function ManageSweets() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    setErrorMessage('');
+    const priceNum = parseFloat(formData.price);
+    const qtyNum = parseInt(formData.quantity);
+    if (!formData.name.trim()) {
+      setErrorMessage('Sweet name is required');
+      return;
+    }
+    if (!formData.category.trim()) {
+      setErrorMessage('Category is required');
+      return;
+    }
+    if (!Number.isFinite(priceNum) || priceNum < 0) {
+      setErrorMessage('Price must be a non-negative number');
+      return;
+    }
+    if (!Number.isInteger(qtyNum) || qtyNum < 0) {
+      setErrorMessage('Initial stock must be a non-negative integer');
+      return;
+    }
+    setSubmitting(true);
     try {
       if (actionType === 'add') {
-        await api.post('/api/sweets', {
+        const createRes = await api.post('/api/sweets', {
           name: formData.name,
           category: formData.category,
-          price: parseFloat(formData.price),
-          quantity: parseInt(formData.quantity),
+          price: priceNum,
+          quantity: qtyNum,
+          description,
         });
+        const sweetId = createRes.data._id || createRes.data.id;
+        if (imageFile && sweetId) {
+          const fd = new FormData();
+          fd.append('image', imageFile);
+          await api.post(`/api/sweets/${sweetId}/image`, fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        }
         setSuccessMessage('✨ Sweet added successfully!');
       } else if (actionType === 'edit' && editingId) {
         await api.put(`/api/sweets/${editingId}`, {
           name: formData.name,
           category: formData.category,
-          price: parseFloat(formData.price),
-          quantity: parseInt(formData.quantity),
+          price: priceNum,
+          quantity: qtyNum,
+          description,
         });
+        if (imageFile) {
+          const fd = new FormData();
+          fd.append('image', imageFile);
+          await api.post(`/api/sweets/${editingId}/image`, fd, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        }
         setSuccessMessage('✏️ Sweet updated successfully!');
       }
 
@@ -102,9 +142,11 @@ export default function ManageSweets() {
       load();
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
-      console.error('Failed to save sweet');
-      alert('Failed to save sweet');
+      const msg = err?.response?.data?.message || 'Failed to save sweet';
+      console.error(msg);
+      setErrorMessage(msg);
     }
+      setSubmitting(false);
   };
 
   const handleRestock = async (e: React.FormEvent) => {
@@ -114,7 +156,7 @@ export default function ManageSweets() {
 
     try {
       await api.post(`/api/sweets/${selectedSweet._id}/restock`, {
-        amount: parseInt(restockAmount),
+        quantity: parseInt(restockAmount),
       });
       setSuccessMessage(`📦 Restocked +${restockAmount} units!`);
       setModalOpen(false);
@@ -294,12 +336,25 @@ export default function ManageSweets() {
                 </div>
               </div>
 
+              <div>
+                <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">Description (optional)</label>
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="input w-full" rows={3} placeholder="Tasting notes, ingredients, etc." />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">Image Upload</label>
+                <input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] || null)} className="input w-full" />
+              </div>
+
+              {errorMessage && (
+                <div className="text-[#D84A4A] bg-[#FFEBEE] border border-[#D84A4A] rounded p-2 text-sm">{errorMessage}</div>
+              )}
               <div className="flex gap-3">
                 <button type="button" onClick={() => setModalOpen(false)} className="btn btn-ghost flex-1">
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary flex-1">
-                  {actionType === 'add' ? 'Add Sweet' : 'Update Sweet'}
+                <button type="submit" className="btn btn-primary flex-1" disabled={submitting}>
+                  {submitting ? 'Saving...' : actionType === 'add' ? 'Add Sweet' : 'Update Sweet'}
                 </button>
               </div>
             </form>
