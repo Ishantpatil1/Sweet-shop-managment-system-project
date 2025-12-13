@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut, Search } from 'lucide-react';
+import { LogOut, Search, Filter } from 'lucide-react';
 import SweetCard from '../components/SweetCard';
 import SkeletonLoader from '../components/SkeletonLoader';
 import EmptyState from '../components/EmptyState';
@@ -32,6 +32,8 @@ export default function Storefront() {
   const [contactEmail, setContactEmail] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+  const [maxPrice, setMaxPrice] = useState<number | null>(null);
 
   const categories = ['All', 'Indian', 'Chocolate', 'Dry Fruits', 'Cakes'];
 
@@ -61,7 +63,9 @@ export default function Storefront() {
     const matchesSearch = sweet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       sweet.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === '' || selectedCategory === 'All' || sweet.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesAvailability = inStockOnly ? sweet.quantity > 0 : true;
+    const matchesPrice = maxPrice != null ? sweet.price <= maxPrice : true;
+    return matchesSearch && matchesCategory && matchesAvailability && matchesPrice;
   });
 
   const handlePurchase = async () => {
@@ -113,12 +117,49 @@ export default function Storefront() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="bg-gradient-to-r from-[#F4A261] via-[#E9C46A] to-[#F4A261] text-white py-12"
+        className="relative overflow-hidden bg-gradient-to-br from-[#FF9A3C] to-[#FFD166] text-white py-14"
       >
-        <div className="container">
-          <h1 className="text-4xl md:text-5xl font-bold mb-2">Fresh Sweets Made with Love 🍬</h1>
-          <p className="text-lg opacity-90">Discover our delicious collection of premium sweets</p>
+        <div className="container relative z-10">
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-4xl md:text-5xl font-extrabold mb-3 drop-shadow"
+          >
+            Fresh Sweets, Crafted with Love 🍬
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="text-lg opacity-95 mb-6"
+          >
+            Authentic, handmade delights. Taste joy in every bite.
+          </motion.p>
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              const el = document.getElementById('store-search');
+              el?.focus();
+            }}
+            className="btn btn-primary bg-white/20 backdrop-blur border-white/30 text-white px-6 py-3 rounded-xl"
+          >
+            Browse Sweets
+          </motion.button>
         </div>
+        {/* Floating sweets */}
+        <motion.div aria-hidden className="absolute inset-0 pointer-events-none">
+          <motion.div className="absolute -top-6 left-6 text-5xl" animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 6 }}>
+            🍮
+          </motion.div>
+          <motion.div className="absolute top-10 right-10 text-4xl" animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 7 }}>
+            🍫
+          </motion.div>
+          <motion.div className="absolute bottom-6 left-1/2 text-5xl" animate={{ y: [0, 12, 0] }} transition={{ repeat: Infinity, duration: 8 }}>
+            🍪
+          </motion.div>
+        </motion.div>
       </motion.div>
 
       {/* Header */}
@@ -156,15 +197,29 @@ export default function Storefront() {
         >
           <div className="card mb-6">
             <div className="flex flex-col md:flex-row gap-4 items-center">
-              <div className="flex-1 flex items-center gap-2 bg-[#FFF3E0] rounded-lg px-4 py-2">
+              <div className="flex-1 flex items-center gap-2 bg-white/60 backdrop-blur rounded-xl px-4 py-3 shadow-sm">
                 <Search size={20} className="text-[#F4A261]" />
                 <input
+                  id="store-search"
                   type="text"
                   placeholder="Search sweets by name..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="flex-1 bg-transparent outline-none text-[#1F1F1F]"
+                  aria-label="Search sweets"
                 />
+              </div>
+              <div className="flex items-center gap-3">
+                <Filter className="text-[#6B6B6B]" />
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" checked={inStockOnly} onChange={(e) => setInStockOnly(e.target.checked)} />
+                  <span>In stock only</span>
+                </label>
+                <div className="flex items-center gap-2 text-sm">
+                  <span>Max Price</span>
+                  <input type="range" min={0} max={1000} step={50} value={maxPrice ?? 1000} onChange={(e) => setMaxPrice(Number(e.target.value))} />
+                  <span className="font-semibold text-[#F4A261]">₹{(maxPrice ?? 1000).toFixed(0)}</span>
+                </div>
               </div>
             </div>
 
