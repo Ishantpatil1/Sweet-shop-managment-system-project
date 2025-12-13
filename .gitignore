@@ -1,0 +1,14 @@
+# Root
+node_modules/
+.DS_Store
+.env
+
+# Server
+/server/node_modules/
+/server/dist/
+/server/coverage/
+
+# Web
+/web/node_modules/
+/web/dist/
+/web/.vite/

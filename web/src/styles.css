@@ -1,0 +1,98 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #F4A261;
+  --primary-dark: #E9C46A;
+  --secondary: #3A2E2A;
+  --accent: #2A9D8F;
+  --bg-light: #FFF8F0;
+  --text-dark: #1F1F1F;
+  --text-light: #6B6B6B;
+  --border: #E8E1D8;
+  --success: #2A9D8F;
+  --warning: #F4A261;
+  --error: #D84A4A;
+}
+
+* {
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  @apply bg-[#FFF8F0] text-[#1F1F1F];
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  @apply font-bold;
+}
+
+.container {
+  @apply max-w-6xl mx-auto px-4 py-6;
+}
+
+.card {
+  @apply bg-white rounded-2xl p-6 shadow-sm border border-[#E8E1D8] transition-all hover:shadow-md;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer;
+}
+
+.btn-primary {
+  @apply bg-[#F4A261] text-white hover:bg-[#E9C46A] shadow-sm;
+}
+
+.btn-secondary {
+  @apply bg-[#3A2E2A] text-white hover:bg-[#2A2420];
+}
+
+.btn-accent {
+  @apply bg-[#2A9D8F] text-white hover:bg-[#228A7A];
+}
+
+.btn-ghost {
+  @apply bg-transparent border border-[#E8E1D8] text-[#1F1F1F] hover:bg-[#FFF8F0];
+}
+
+.btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+input, textarea, select {
+  @apply px-4 py-2 rounded-lg border border-[#E8E1D8] focus:outline-none focus:ring-2 focus:ring-[#F4A261] bg-white;
+}
+
+.stat-card {
+  @apply bg-white rounded-2xl p-6 border border-[#E8E1D8] shadow-sm;
+}
+
+.grid-sweets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+header {
+  @apply flex items-center justify-between mb-6 border-b border-[#E8E1D8] pb-4;
+}
+
+.badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+}
+
+.badge-success {
+  @apply bg-[#E8F5F0] text-[#2A9D8F];
+}
+
+.badge-warning {
+  @apply bg-[#FFF3E0] text-[#F4A261];
+}
+
+.badge-error {
+  @apply bg-[#FFEBEE] text-[#D84A4A];
+}
