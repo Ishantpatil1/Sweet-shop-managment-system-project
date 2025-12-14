@@ -2,7 +2,11 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Twitter, Heart } from 'lucide-react';
 
-export default function Footer({ variant = 'user' }) {
+interface FooterProps {
+  variant?: 'admin' | 'user';
+}
+
+export default function Footer({ variant = 'user' }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
   if (variant === 'admin') {

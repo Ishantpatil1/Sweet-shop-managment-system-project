@@ -9,7 +9,14 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import EmptyState from '../components/EmptyState';
 import Modal from '../components/Modal';
 import api from '../api';
-import { useUser } from '../context/UserContext';
+
+type Sweet = {
+  _id: string;
+  name: string;
+  category: string;
+  price: number;
+  quantity: number;
+};
 
 const chartData = [
   { name: 'Mon', sales: 400 },
@@ -32,10 +39,11 @@ const COLORS = ['#F4A261', '#2A9D8F', '#3A2E2A', '#E9C46A'];
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [sweets, setSweets] = useState([]);
+  const [sweets, setSweets] = useState<Sweet[]>([]);
   const [loading, setLoading] = useState(true);
-  const [purchaseModal, setPurchaseModal] = useState({ open: false });
+  const [purchaseModal, setPurchaseModal] = useState<{ open: boolean; sweet?: Sweet }>({ open: false });
   const [quantity, setQuantity] = useState(1);
+
 
   const load = async () => {
     try {
@@ -62,7 +70,7 @@ export default function Dashboard() {
       await api.post(`/api/sweets/${purchaseModal.sweet._id}/purchase`, { quantity });
       setSweets((prev) =>
         prev.map((s) =>
-          s._id === purchaseModal.sweet._id ? { ...s, quantity: s.quantity - quantity } : s,
+          s._id === purchaseModal.sweet!._id ? { ...s, quantity: s.quantity - quantity } : s,
         ),
       );
       setPurchaseModal({ open: false });
@@ -71,11 +79,10 @@ export default function Dashboard() {
     }
   };
 
-  const { logout } = useUser();
-
   const handleLogout = () => {
-    logout();
+    localStorage.removeItem('token');
     navigate('/login', { replace: true });
+    window.location.reload();
   };
 
   return (

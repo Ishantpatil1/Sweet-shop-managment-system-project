@@ -3,12 +3,19 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 
+interface AdminFooterProps {
+  year?: number;
+  version?: string;
+  environment?: 'dev' | 'prod' | 'staging';
+  role?: string;
+}
+
 export default function AdminFooter({
   year = new Date().getFullYear(),
   version = '1.0.0',
   environment = 'prod',
   role = 'Administrator',
-}) {
+}: AdminFooterProps) {
   return (
     <motion.footer
       initial={{ opacity: 0 }}
@@ -27,7 +34,7 @@ export default function AdminFooter({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.55 }}
           >
-            <h3 className="text-sm font-bold mb-2 opacity-95">Kata Admin</h3>
+            <h3 className="text-sm font-bold mb-2 opacity-95">SweetMart Admin</h3>
             <p className="text-xs opacity-85">Version {version}</p>
             <p className="text-xs opacity-75 mt-1">Management System</p>
           </motion.div>
@@ -88,7 +95,7 @@ export default function AdminFooter({
         {/* Divider */}
         <div className="border-t border-white/20 pt-6 mt-8">
           <div className="flex flex-col md:flex-row items-center justify-between text-sm opacity-80">
-            <p className="mb-3 md:mb-0">© {year} Kata. All rights reserved.</p>
+            <p className="mb-3 md:mb-0">© {year} SweetMart. All rights reserved.</p>
             <p className="flex items-center gap-1">
               Built with <Heart size={16} className="text-[#FFE5E5]" /> for shop management
             </p>

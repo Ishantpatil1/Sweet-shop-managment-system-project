@@ -3,15 +3,20 @@ import { useLocation, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LogOut } from 'lucide-react';
 
+interface AdminHeaderProps {
+  userName?: string;
+  onLogout: () => void;
+}
+
 const NAV_LINKS = [
   { path: '/admin/dashboard', label: 'Dashboard' },
   { path: '/admin/manage-sweets', label: 'Manage Sweets' },
 ];
 
-export default function AdminHeader({ userName = 'Admin', onLogout }) {
+export default function AdminHeader({ userName = 'Admin', onLogout }: AdminHeaderProps) {
   const location = useLocation();
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <motion.header
@@ -65,8 +70,8 @@ export default function AdminHeader({ userName = 'Admin', onLogout }) {
           {/* Right: Actions & Logout */}
           <div className="flex items-center gap-3">
             {/* Admin Badge */}
-            <div className="hidden sm:flex items-center pr-3">
-              <span className="px-3 py-1 rounded-full bg-white/15 text-sm font-semibold text-white shadow-sm backdrop-blur">
+            <div className="hidden sm:flex items-center gap-2 border-r border-white/30 pr-3">
+              <span className="text-xs font-medium text-white/90 uppercase tracking-wide">
                 {userName}
               </span>
             </div>
@@ -76,7 +81,7 @@ export default function AdminHeader({ userName = 'Admin', onLogout }) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#C25400] text-sm font-semibold shadow-sm hover:shadow-md hover:bg-white/90 transition-all duration-150"
+              className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors duration-150"
               aria-label="Logout"
             >
               <LogOut size={16} />
