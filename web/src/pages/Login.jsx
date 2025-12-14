@@ -7,7 +7,7 @@ import api from '../api';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { setUser } = useUser();
+  const { setUser, setUserFromToken } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,10 +24,10 @@ export default function Login() {
       localStorage.setItem('token', token);
 
       // Decode JWT to get role
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      setUser({ userId: payload.userId, role: payload.role, email: payload.email, name: payload.name });
+      setUserFromToken(token);
 
       // Redirect based on role
+      const payload = JSON.parse(atob(token.split('.')[1]));
       if (payload.role === 'admin') {
         navigate('/admin/dashboard', { replace: true });
       } else {

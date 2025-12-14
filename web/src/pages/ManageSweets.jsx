@@ -25,7 +25,7 @@ const getImageUrl = (imageUrl) => {
 
 export default function ManageSweets() {
   const navigate = useNavigate();
-  const { user, setUser } = useUser();
+  const { user, logout } = useUser();
   const [sweets, setSweets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -192,8 +192,7 @@ export default function ManageSweets() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+    logout();
     navigate('/login', { replace: true });
   };
 

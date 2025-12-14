@@ -23,7 +23,7 @@ const getImageUrl = (imageUrl) => {
 
 export default function Storefront() {
   const navigate = useNavigate();
-  const { user, setUser } = useUser();
+  const { user, setUser, logout } = useUser();
   const [sweets, setSweets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -125,14 +125,13 @@ export default function Storefront() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+    logout();
     navigate('/login', { replace: true });
   };
 
   return (
     <div className="min-h-screen bg-[#FFF8F0] flex flex-col">
-      <Header onLogout={handleLogout} />
+      <Header onLogout={handleLogout} userName={user?.name || 'Guest'} />
 
       {successMessage && (
         <motion.div

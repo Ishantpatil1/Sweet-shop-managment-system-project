@@ -2,102 +2,92 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import './styles.css';
-import { UserProvider } from './context/UserContext';
+import { UserProvider, useUser } from './context/UserContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AdminDashboard from './pages/AdminDashboard';
 import ManageSweets from './pages/ManageSweets';
 import Storefront from './pages/Storefront';
 
-// Protected Route Component
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center bg-[#FFF8F0] text-[#1F1F1F] font-semibold">
+    Loading...
+  </div>
+);
+
 const ProtectedRoute = ({ children, requiredRole }) => {
-  const token = localStorage.getItem('token');
+  const { user, authLoading } = useUser();
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (requiredRole) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      if (requiredRole === 'admin' && payload.role !== 'admin') {
-        return <Navigate to="/store" replace />;
-      }
-      if (requiredRole === 'user' && payload.role === 'admin') {
-        return <Navigate to="/admin/dashboard" replace />;
-      }
-    } catch (err) {
-      return <Navigate to="/login" replace />;
-    }
-  }
-
+  if (authLoading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (requiredRole === 'admin' && user.role !== 'admin') return <Navigate to="/store" replace />;
+  if (requiredRole === 'user' && user.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
   return <>{children}</>;
 };
 
-const App = () => {
-  const token = localStorage.getItem('token');
-
-  return (
-    <UserProvider>
-      <BrowserRouter>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/login" element={token ? <Navigate to="/" replace /> : <Login />} />
-          <Route path="/register" element={token ? <Navigate to="/" replace /> : <Register />} />
-
-          {/* Admin Routes */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/manage-sweets"
-            element={
-              <ProtectedRoute requiredRole="admin">
-                <ManageSweets />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* User/Customer Routes */}
-          <Route
-            path="/store"
-            element={
-              <ProtectedRoute requiredRole="user">
-                <Storefront />
-              </ProtectedRoute>
-            }
-          />
-
-          {/* Root redirect - check role and redirect */}
-          <Route
-            path="/"
-            element={
-              token ? (
-                (() => {
-                  try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    return payload.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/store" replace />;
-                  } catch {
-                    return <Navigate to="/login" replace />;
-                  }
-                })()
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-
-          {/* Catch-all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </UserProvider>
-  );
+const RoleRedirect = () => {
+  const { user, authLoading } = useUser();
+  if (authLoading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/login" replace />;
+  return user.role === 'admin' ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/store" replace />;
 };
+
+const PublicRoute = ({ children }) => {
+  const { user, authLoading } = useUser();
+  if (authLoading) return <LoadingScreen />;
+  if (user) return <Navigate to="/" replace />;
+  return <>{children}</>;
+};
+
+const App = () => (
+  <UserProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <PublicRoute>
+              <Register />
+            </PublicRoute>
+          }
+        />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/manage-sweets"
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <ManageSweets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/store"
+          element={
+            <ProtectedRoute requiredRole="user">
+              <Storefront />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/" element={<RoleRedirect />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  </UserProvider>
+);
 
 createRoot(document.getElementById('root')).render(<App />);

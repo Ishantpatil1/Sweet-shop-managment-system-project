@@ -5,19 +5,13 @@ import { LogOut } from 'lucide-react';
 
 const NAV_LINKS = [
   { path: '/admin/dashboard', label: 'Dashboard' },
-  { path: '/admin/manage', label: 'Manage Sweets' },
-  { path: '#inventory', label: 'Inventory' },
-  { path: '#purchases', label: 'Purchases' },
+  { path: '/admin/manage-sweets', label: 'Manage Sweets' },
 ];
 
 export default function AdminHeader({ userName = 'Admin', onLogout }) {
   const location = useLocation();
 
-  const isActive = (path) => {
-    if (path === '/admin/dashboard') return location.pathname === path;
-    if (path === '/admin/manage') return location.pathname === path;
-    return false;
-  };
+  const isActive = (path) => location.pathname === path;
 
   return (
     <motion.header
@@ -46,20 +40,20 @@ export default function AdminHeader({ userName = 'Admin', onLogout }) {
           </motion.div>
 
           {/* Center: Navigation Links */}
-          <nav 
-            className="hidden md:flex items-center gap-1" 
-            role="navigation" 
+          <nav
+            className="hidden md:flex items-center gap-2"
+            role="navigation"
             aria-label="Admin navigation"
           >
-            {NAV_LINKS.slice(0, 2).map((link) => (
+            {NAV_LINKS.map((link) => (
               <motion.a
                 key={link.path}
                 whileHover={{ y: -2 }}
                 href={link.path}
-                className={`px-3 py-2 text-sm font-medium transition-colors duration-150 border-b-2 ${
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-150 shadow-sm ${
                   isActive(link.path)
-                    ? 'text-white border-white'
-                    : 'text-white/80 border-transparent hover:text-white'
+                    ? 'bg-white text-[#C25400] shadow-md scale-[1.02]'
+                    : 'bg-white/15 text-white/90 border border-white/20 hover:bg-white/30 hover:text-white'
                 }`}
                 aria-current={isActive(link.path) ? 'page' : undefined}
               >
@@ -71,8 +65,8 @@ export default function AdminHeader({ userName = 'Admin', onLogout }) {
           {/* Right: Actions & Logout */}
           <div className="flex items-center gap-3">
             {/* Admin Badge */}
-            <div className="hidden sm:flex items-center gap-2 border-r border-white/30 pr-3">
-              <span className="text-xs font-medium text-white/90 uppercase tracking-wide">
+            <div className="hidden sm:flex items-center pr-3">
+              <span className="px-3 py-1 rounded-full bg-white/15 text-sm font-semibold text-white shadow-sm backdrop-blur">
                 {userName}
               </span>
             </div>
@@ -82,7 +76,7 @@ export default function AdminHeader({ userName = 'Admin', onLogout }) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={onLogout}
-              className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors duration-150"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-[#C25400] text-sm font-semibold shadow-sm hover:shadow-md hover:bg-white/90 transition-all duration-150"
               aria-label="Logout"
             >
               <LogOut size={16} />

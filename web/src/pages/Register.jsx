@@ -3,9 +3,11 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { User, Mail, Lock, Loader2 } from 'lucide-react';
 import api from '../api';
+import { useUser } from '../context/UserContext';
 
 export default function Register() {
   const navigate = useNavigate();
+  const { setUserFromToken } = useUser();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,7 +25,14 @@ export default function Register() {
     try {
       // For this assignment, we'll register with role in the request
       // Backend should accept role from frontend
-      await api.post('/api/auth/register', { name: name.trim(), email: email.trim().toLowerCase(), password, role });
+      const res = await api.post('/api/auth/register', { name: name.trim(), email: email.trim().toLowerCase(), password, role });
+      if (res.data?.token) {
+        localStorage.setItem('token', res.data.token);
+        setUserFromToken(res.data.token);
+        const payload = JSON.parse(atob(res.data.token.split('.')[1]));
+        navigate(payload.role === 'admin' ? '/admin/dashboard' : '/store', { replace: true });
+        return;
+      }
       setMessage('✨ Account created! Redirecting to login...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err) {

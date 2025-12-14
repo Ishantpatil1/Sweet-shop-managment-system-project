@@ -9,6 +9,7 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import EmptyState from '../components/EmptyState';
 import Modal from '../components/Modal';
 import api from '../api';
+import { useUser } from '../context/UserContext';
 
 const chartData = [
   { name: 'Mon', sales: 400 },
@@ -70,10 +71,11 @@ export default function Dashboard() {
     }
   };
 
+  const { logout } = useUser();
+
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    logout();
     navigate('/login', { replace: true });
-    window.location.reload();
   };
 
   return (

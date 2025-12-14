@@ -32,7 +32,7 @@ const COLORS = ['#F4A261', '#2A9D8F', '#3A2E2A', '#E9C46A'];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const { user, setUser } = useUser();
+  const { user, logout } = useUser();
   const [sweets, setSweets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [purchases, setPurchases] = useState([]);
@@ -66,8 +66,7 @@ export default function AdminDashboard() {
   const totalSweets = sweets.length;
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    setUser(null);
+    logout();
     navigate('/login', { replace: true });
   };
 
