@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Edit2, Trash2, LogOut, TrendingUp } from 'lucide-react';
+import { Plus, Edit2, Trash2, TrendingUp } from 'lucide-react';
 import Modal from '../components/Modal';
 import SkeletonLoader from '../components/SkeletonLoader';
 import SweetCard from '../components/SweetCard';
+import AdminHeader from '../components/AdminHeader';
+import AdminFooter from '../components/AdminFooter';
 import { useUser } from '../context/UserContext';
 import api from '../api';
 
@@ -14,9 +16,21 @@ type Sweet = {
   category: string;
   price: number;
   quantity: number;
+  imageUrl?: string;
 };
 
 const initialFormState = { name: '', category: 'Indian', price: '', quantity: '' };
+
+// Helper function to construct full image URLs
+const getImageUrl = (imageUrl?: string): string | undefined => {
+  if (!imageUrl) return undefined;
+  if (imageUrl.startsWith('http')) return imageUrl;
+  if (imageUrl.startsWith('/uploads')) {
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+    return `${apiBaseUrl}${imageUrl}`;
+  }
+  return imageUrl;
+};
 
 export default function ManageSweets() {
   const navigate = useNavigate();
@@ -38,7 +52,12 @@ export default function ManageSweets() {
   const load = async () => {
     try {
       const res = await api.get('/api/sweets');
-      setSweets(res.data);
+      // Process image URLs for all sweets
+      const processedSweets = res.data.map((sweet: Sweet) => ({
+        ...sweet,
+        imageUrl: getImageUrl(sweet.imageUrl),
+      }));
+      setSweets(processedSweets);
     } catch (err) {
       console.error('Failed to load sweets');
     } finally {
@@ -189,39 +208,23 @@ export default function ManageSweets() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF8F0]">
-      {/* Header */}
-      <header className="bg-white border-b border-[#E8E1D8] sticky top-0 z-40">
-        <div className="container flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-3xl">📦</div>
-            <h1 className="text-2xl font-bold text-[#1F1F1F]">Manage Sweets</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <button onClick={() => navigate('/admin/dashboard')} className="btn btn-ghost text-[#6B6B6B]">
-              Dashboard
-            </button>
-            <button onClick={handleLogout} className="btn btn-ghost text-[#6B6B6B] flex items-center gap-2">
-              <LogOut size={18} />
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#FFF8F0] flex flex-col">
+      {/* Admin Header */}
+      <AdminHeader onLogout={handleLogout} userName={user?.name || 'Admin'} />
 
       <div className="container">
         {/* Success Message */}
         {successMessage && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed top-4 right-4 bg-white rounded-lg p-4 shadow-lg border-l-4 border-[#2A9D8F]">
-            {successMessage}
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="fixed top-4 right-4 bg-white rounded-lg p-3 sm:p-4 shadow-lg border-l-4 border-[#2A9D8F] max-w-xs">
+            <p className="text-sm sm:text-base">{successMessage}</p>
           </motion.div>
         )}
 
         {/* Action Bar */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="my-8">
-          <button onClick={handleAddClick} className="btn btn-primary flex items-center gap-2">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="my-6 sm:my-8">
+          <button onClick={handleAddClick} className="btn btn-primary flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto">
             <Plus size={20} />
-            Add New Sweet
+            <span>Add New Sweet</span>
           </button>
         </motion.div>
 
@@ -360,6 +363,9 @@ export default function ManageSweets() {
             </form>
           )}
         </Modal>
+
+        {/* Footer */}
+        <AdminFooter version="1.0.0" environment="prod" />
       </div>
     </div>
   );

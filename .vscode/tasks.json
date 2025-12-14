@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run web dev server",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoLogo",
+				"-NoProfile",
+				"-Command",
+				"cd \"D:\\sweet shop managment\\web\"; npm run dev"
+			],
+			"group": "build"
+		}
+	]
+}

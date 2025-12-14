@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut, Search, Filter } from 'lucide-react';
+import { Search, X, Loader2 } from 'lucide-react';
+import Header from '../components/Header';
 import SweetCard from '../components/SweetCard';
 import SkeletonLoader from '../components/SkeletonLoader';
 import EmptyState from '../components/EmptyState';
@@ -16,6 +17,16 @@ type Sweet = {
   price: number;
   quantity: number;
   imageUrl?: string;
+};
+
+const getImageUrl = (imageUrl?: string): string | undefined => {
+  if (!imageUrl) return undefined;
+  if (imageUrl.startsWith('http')) return imageUrl;
+  if (imageUrl.startsWith('/uploads')) {
+    const apiBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:4001';
+    return `${apiBaseUrl}${imageUrl}`;
+  }
+  return imageUrl;
 };
 
 export default function Storefront() {
@@ -40,7 +51,11 @@ export default function Storefront() {
   const load = async () => {
     try {
       const res = await api.get('/api/sweets');
-      setSweets(res.data);
+      const processedSweets = res.data.map((sweet: Sweet) => ({
+        ...sweet,
+        imageUrl: getImageUrl(sweet.imageUrl),
+      }));
+      setSweets(processedSweets);
     } catch (err) {
       console.error('Failed to load sweets');
     } finally {
@@ -54,7 +69,6 @@ export default function Storefront() {
       return;
     }
     load();
-    // Prefill contact info from user
     setContactName(user?.name || '');
     setContactEmail(user?.email || '');
   }, [user, navigate]);
@@ -70,7 +84,6 @@ export default function Storefront() {
 
   const handlePurchase = async () => {
     if (!purchaseModal.sweet) return;
-    // Validation
     if (quantity < 1) {
       alert('Quantity must be at least 1');
       return;
@@ -81,7 +94,6 @@ export default function Storefront() {
     }
     setSubmitting(true);
     try {
-      // Use purchases API
       await api.post(`/api/purchases`, {
         sweetId: purchaseModal.sweet._id,
         quantity,
@@ -112,71 +124,9 @@ export default function Storefront() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF8F0]">
-      {/* Hero Section */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="relative overflow-hidden bg-gradient-to-br from-[#FF9A3C] to-[#FFD166] text-white py-14"
-      >
-        <div className="container relative z-10">
-          <motion.h1
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-4xl md:text-5xl font-extrabold mb-3 drop-shadow"
-          >
-            Fresh Sweets, Crafted with Love 🍬
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.05 }}
-            className="text-lg opacity-95 mb-6"
-          >
-            Authentic, handmade delights. Taste joy in every bite.
-          </motion.p>
-          <motion.button
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => {
-              const el = document.getElementById('store-search');
-              el?.focus();
-            }}
-            className="btn btn-primary bg-white/20 backdrop-blur border-white/30 text-white px-6 py-3 rounded-xl"
-          >
-            Browse Sweets
-          </motion.button>
-        </div>
-        {/* Floating sweets */}
-        <motion.div aria-hidden className="absolute inset-0 pointer-events-none">
-          <motion.div className="absolute -top-6 left-6 text-5xl" animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 6 }}>
-            🍮
-          </motion.div>
-          <motion.div className="absolute top-10 right-10 text-4xl" animate={{ y: [0, -8, 0] }} transition={{ repeat: Infinity, duration: 7 }}>
-            🍫
-          </motion.div>
-          <motion.div className="absolute bottom-6 left-1/2 text-5xl" animate={{ y: [0, 12, 0] }} transition={{ repeat: Infinity, duration: 8 }}>
-            🍪
-          </motion.div>
-        </motion.div>
-      </motion.div>
+    <div className="min-h-screen bg-[#FFF8F0] flex flex-col">
+      <Header onLogout={handleLogout} />
 
-      {/* Header */}
-      <header className="bg-white border-b border-[#E8E1D8] sticky top-0 z-40">
-        <div className="container flex items-center justify-between py-4">
-          <div className="flex items-center gap-3">
-            <div className="text-3xl">🛒</div>
-            <h2 className="text-xl font-bold text-[#1F1F1F]">SweetMart Store</h2>
-          </div>
-          <button onClick={handleLogout} className="btn btn-ghost text-[#6B6B6B] flex items-center gap-2">
-            <LogOut size={18} />
-            Logout
-          </button>
-        </div>
-      </header>
-
-      {/* Success Message */}
       {successMessage && (
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -188,63 +138,96 @@ export default function Storefront() {
         </motion.div>
       )}
 
-      <div className="container py-8">
-        {/* Search and Filters */}
+      <div className="container py-4 sm:py-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-6 sm:mb-8"
         >
-          <div className="card mb-6">
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-              <div className="flex-1 flex items-center gap-2 bg-white/60 backdrop-blur rounded-xl px-4 py-3 shadow-sm">
-                <Search size={20} className="text-[#F4A261]" />
+          <div className="bg-white/80 backdrop-blur rounded-2xl shadow-sm border border-[#FFE3C7] p-4 sm:p-5 space-y-4">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <label htmlFor="store-search" className="sr-only">Search sweets</label>
+              <div className="relative flex items-center gap-2 rounded-xl bg-white border border-[#FFD8AF] focus-within:border-[#F4A261] focus-within:ring-2 focus-within:ring-[#F4A261]/20 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.2)] px-3 sm:px-4 py-2.5">
+                <Search size={18} className="text-[#F4A261]" aria-hidden />
                 <input
                   id="store-search"
                   type="text"
-                  placeholder="Search sweets by name..."
+                  placeholder="Search sweets by name, category, or price…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="flex-1 bg-transparent outline-none text-[#1F1F1F]"
+                  className="flex-1 bg-transparent outline-none text-[#1F1F1F] text-sm sm:text-base"
                   aria-label="Search sweets"
                 />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    aria-label="Clear search"
+                    onClick={() => setSearchTerm('')}
+                    className="p-1 text-[#9E9E9E] hover:text-[#F4A261] transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
               </div>
-              <div className="flex items-center gap-3">
-                <Filter className="text-[#6B6B6B]" />
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={inStockOnly} onChange={(e) => setInStockOnly(e.target.checked)} />
-                  <span>In stock only</span>
-                </label>
-                <div className="flex items-center gap-2 text-sm">
-                  <span>Max Price</span>
-                  <input type="range" min={0} max={1000} step={50} value={maxPrice ?? 1000} onChange={(e) => setMaxPrice(Number(e.target.value))} />
-                  <span className="font-semibold text-[#F4A261]">₹{(maxPrice ?? 1000).toFixed(0)}</span>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="flex flex-col gap-1">
+                  <label htmlFor="category" className="text-xs font-semibold text-[#6B6B6B]">Category</label>
+                  <select
+                    id="category"
+                    value={selectedCategory || 'All'}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="w-full rounded-lg border border-[#FFD8AF] bg-white px-3 py-2 text-sm text-[#1F1F1F] focus:border-[#F4A261] focus:ring-2 focus:ring-[#F4A261]/20"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-[#6B6B6B]">Max Price</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={1000}
+                      step={50}
+                      value={maxPrice ?? 1000}
+                      onChange={(e) => setMaxPrice(Number(e.target.value))}
+                      className="flex-1 accent-[#F4A261]"
+                    />
+                    <span className="text-sm font-semibold text-[#F4A261] whitespace-nowrap">₹{(maxPrice ?? 1000).toFixed(0)}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between sm:justify-start sm:gap-3 rounded-lg border border-[#FFD8AF] bg-white px-3 py-2.5">
+                  <div className="flex flex-col">
+                    <span className="text-xs font-semibold text-[#6B6B6B]">Availability</span>
+                    <span className="text-sm text-[#1F1F1F]">In stock</span>
+                  </div>
+                  <label className="inline-flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={inStockOnly}
+                      onChange={(e) => setInStockOnly(e.target.checked)}
+                      className="h-4 w-4 accent-[#F4A261]"
+                      aria-label="Show in-stock only"
+                    />
+                  </label>
                 </div>
               </div>
-            </div>
 
-            {/* Category Filter */}
-            <div className="mt-4 flex gap-2 flex-wrap">
-              {categories.map((cat) => (
-                <motion.button
-                  key={cat}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    selectedCategory === cat
-                      ? 'bg-[#F4A261] text-white'
-                      : 'bg-[#FFF3E0] text-[#F4A261] hover:bg-[#F4A261] hover:text-white'
-                  }`}
-                >
-                  {cat}
-                </motion.button>
-              ))}
+              {loading && (
+                <div className="flex items-center gap-2 text-sm text-[#6B6B6B]">
+                  <Loader2 className="h-4 w-4 animate-spin text-[#F4A261]" />
+                  <span>Loading sweets…</span>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
 
-        {/* Sweets Grid */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
           <h2 className="text-2xl font-bold text-[#1F1F1F] mb-6">
             {selectedCategory && selectedCategory !== 'All' ? `${selectedCategory} Sweets` : 'All Sweets'}
@@ -286,78 +269,150 @@ export default function Storefront() {
         </motion.div>
       </div>
 
-      {/* Purchase Modal */}
       <Modal
         isOpen={purchaseModal.open}
         onClose={() => setPurchaseModal({ open: false })}
         title="🛍️ Complete Your Order"
         footer={
           <>
-            <button onClick={() => setPurchaseModal({ open: false })} className="btn btn-ghost">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setPurchaseModal({ open: false })}
+              className="btn btn-ghost px-6 py-2"
+            >
               Cancel
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={handlePurchase}
-              className="btn btn-primary"
+              className="btn btn-primary px-6 py-2 flex items-center gap-2"
               disabled={submitting || (purchaseModal.sweet ? purchaseModal.sweet.quantity === 0 : false)}
             >
-              {submitting ? 'Processing...' : 'Complete Purchase'}
-            </button>
+              {submitting ? (
+                <>
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1, repeat: Infinity }}
+                    className="w-4 h-4 border-2 border-white border-t-transparent rounded-full"
+                  />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                'Complete Purchase'
+              )}
+            </motion.button>
           </>
         }
       >
         {purchaseModal.sweet && (
-          <div className="space-y-4">
-            <div>
-              <p className="text-[#6B6B6B] mb-2">Sweet: {purchaseModal.sweet.name}</p>
-              <p className="text-2xl font-bold text-[#F4A261]">₹{purchaseModal.sweet.price.toFixed(2)}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#1F1F1F] mb-2">Quantity</label>
-              <input
-                type="number"
-                min="1"
-                max={purchaseModal.sweet.quantity}
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#1F1F1F] mb-2">Your Name</label>
+          <div className="space-y-5">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-gradient-to-br from-[#FFF3E0] to-[#FFE8D6] rounded-xl p-4"
+            >
+              <p className="text-sm text-[#6B6B6B] mb-1">Sweet</p>
+              <h3 className="text-lg font-bold text-[#1F1F1F] mb-2">{purchaseModal.sweet.name}</h3>
+              <p className="text-3xl font-extrabold text-[#F4A261]">₹{purchaseModal.sweet.price.toFixed(2)}</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05 }}
+            >
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">Quantity</label>
+              <div className="flex items-center gap-3">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={submitting}
+                  className="px-4 py-2 bg-[#FFF3E0] text-[#F4A261] font-bold rounded-lg hover:bg-[#F4A261] hover:text-white transition-all duration-200"
+                >
+                  −
+                </motion.button>
+                <input
+                  type="number"
+                  min="1"
+                  max={purchaseModal.sweet.quantity}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                  disabled={submitting}
+                  className="w-16 px-3 py-2 text-center border-2 border-[#E8E1D8] rounded-lg outline-none focus:border-[#F4A261] focus:ring-2 focus:ring-[#F4A261]/20 transition-all duration-300"
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setQuantity(Math.min(purchaseModal.sweet!.quantity, quantity + 1))}
+                  disabled={submitting}
+                  className="px-4 py-2 bg-[#FFF3E0] text-[#F4A261] font-bold rounded-lg hover:bg-[#F4A261] hover:text-white transition-all duration-200"
+                >
+                  +
+                </motion.button>
+              </div>
+              <p className="text-xs text-[#9E9E9E] mt-1">Max: {purchaseModal.sweet.quantity} items</p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">Your Name</label>
               <input
                 type="text"
                 value={contactName}
                 onChange={(e) => setContactName(e.target.value)}
-                className="w-full"
+                disabled={submitting}
                 placeholder="Your full name"
+                className="w-full px-4 py-3 bg-white border-2 border-[#E8E1D8] rounded-lg outline-none focus:border-[#F4A261] focus:ring-2 focus:ring-[#F4A261]/20 transition-all duration-300 disabled:opacity-50"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#1F1F1F] mb-2">Your Email</label>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">Your Email</label>
               <input
                 type="email"
                 value={contactEmail}
                 onChange={(e) => setContactEmail(e.target.value)}
-                className="w-full"
+                disabled={submitting}
                 placeholder="you@example.com"
+                className="w-full px-4 py-3 bg-white border-2 border-[#E8E1D8] rounded-lg outline-none focus:border-[#F4A261] focus:ring-2 focus:ring-[#F4A261]/20 transition-all duration-300 disabled:opacity-50"
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#1F1F1F] mb-2">Delivery Note (optional)</label>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <label className="block text-sm font-semibold text-[#1F1F1F] mb-2">Delivery Note (optional)</label>
               <textarea
                 value={deliveryNote}
                 onChange={(e) => setDeliveryNote(e.target.value)}
-                className="w-full"
+                disabled={submitting}
+                placeholder="Any special instructions for delivery?"
                 rows={3}
-                placeholder="Any special instructions?"
+                className="w-full px-4 py-3 bg-white border-2 border-[#E8E1D8] rounded-lg outline-none focus:border-[#F4A261] focus:ring-2 focus:ring-[#F4A261]/20 transition-all duration-300 resize-none disabled:opacity-50"
               />
-            </div>
-            <div className="bg-[#FFF3E0] p-3 rounded-lg">
-              <p className="text-sm text-[#6B6B6B]">
-                Total: <span className="font-bold text-[#F4A261]">₹{(purchaseModal.sweet.price * quantity).toFixed(2)}</span>
-              </p>
-            </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              className="bg-gradient-to-r from-[#F4A261] to-[#FF9A3C] text-white p-4 rounded-lg"
+            >
+              <p className="text-sm opacity-90 mb-1">Total Amount</p>
+              <p className="text-3xl font-extrabold">₹{(purchaseModal.sweet.price * quantity).toFixed(2)}</p>
+            </motion.div>
           </div>
         )}
       </Modal>

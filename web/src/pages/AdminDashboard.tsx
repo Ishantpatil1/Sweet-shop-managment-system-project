@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { LineChart, Line, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { LogOut, Plus, AlertCircle, Package } from 'lucide-react';
+import { Plus, AlertCircle, Package } from 'lucide-react';
 import StatCard from '../components/StatCard';
 import SkeletonLoader from '../components/SkeletonLoader';
 import Modal from '../components/Modal';
+import AdminHeader from '../components/AdminHeader';
+import AdminFooter from '../components/AdminFooter';
 import { useUser } from '../context/UserContext';
 import api from '../api';
 
@@ -89,27 +91,16 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF8F0]">
-      {/* Header */}
-      <header className="bg-white border-b border-[#E8E1D8] sticky top-0 z-40">
-        <div className="container flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="text-3xl">⚙️</div>
-            <h1 className="text-2xl font-bold text-[#1F1F1F]">Admin Dashboard</h1>
-          </div>
-          <button onClick={handleLogout} className="btn btn-ghost text-[#6B6B6B] flex items-center gap-2">
-            <LogOut size={18} />
-            Logout
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#FFF8F0] flex flex-col">
+      {/* Admin Header */}
+      <AdminHeader onLogout={handleLogout} userName={user?.name || 'Admin'} />
 
       <div className="container">
         {/* Stats Grid */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 my-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 my-6 sm:my-8"
         >
           <StatCard title="Total Sweets" value={metrics?.totalSweets ?? totalSweets} icon="📦" color="primary" />
           <StatCard title="In Stock" value={metrics?.totalStock ?? totalStock} icon="🏪" color="accent" />
@@ -124,7 +115,7 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Charts Section */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <div className="card">
             <h3 className="text-lg font-bold text-[#1F1F1F] mb-4">📈 Sales Trend</h3>
             <ResponsiveContainer width="100%" height={300}>
@@ -252,6 +243,9 @@ export default function AdminDashboard() {
           </div>
         </motion.div>
       </div>
+
+      {/* Footer */}
+      <AdminFooter version="1.0.0" environment="prod" />
     </div>
   );
 }

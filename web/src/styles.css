@@ -32,57 +32,79 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .container {
-  @apply max-w-6xl mx-auto px-4 py-6;
+  @apply max-w-6xl mx-auto px-4 py-4 sm:py-6 md:py-8;
 }
 
+/* Responsive card with mobile-first padding */
 .card {
-  @apply bg-white rounded-2xl p-6 shadow-sm border border-[#E8E1D8] transition-all hover:shadow-md;
+  @apply bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-sm border border-[#E8E1D8] transition-all hover:shadow-md;
 }
 
+/* Responsive buttons with touch-friendly sizing */
 .btn {
-  @apply px-4 py-2 rounded-lg font-medium transition-all duration-200 cursor-pointer;
+  @apply px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg font-medium transition-all duration-200 cursor-pointer text-sm sm:text-base min-h-[44px] sm:min-h-[40px];
 }
 
 .btn-primary {
-  @apply bg-[#F4A261] text-white hover:bg-[#E9C46A] shadow-sm;
+  @apply bg-[#F4A261] text-white hover:bg-[#E9C46A] shadow-sm active:scale-95;
 }
 
 .btn-secondary {
-  @apply bg-[#3A2E2A] text-white hover:bg-[#2A2420];
+  @apply bg-[#3A2E2A] text-white hover:bg-[#2A2420] active:scale-95;
 }
 
 .btn-accent {
-  @apply bg-[#2A9D8F] text-white hover:bg-[#228A7A];
+  @apply bg-[#2A9D8F] text-white hover:bg-[#228A7A] active:scale-95;
 }
 
 .btn-ghost {
-  @apply bg-transparent border border-[#E8E1D8] text-[#1F1F1F] hover:bg-[#FFF8F0];
+  @apply bg-transparent border border-[#E8E1D8] text-[#1F1F1F] hover:bg-[#FFF8F0] active:scale-95;
 }
 
 .btn:disabled {
-  @apply opacity-50 cursor-not-allowed;
+  @apply opacity-50 cursor-not-allowed active:scale-100;
 }
 
+/* Responsive input fields with better mobile touch targets */
 input, textarea, select {
-  @apply px-4 py-2 rounded-lg border border-[#E8E1D8] focus:outline-none focus:ring-2 focus:ring-[#F4A261] bg-white;
+  @apply w-full px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg border border-[#E8E1D8] focus:outline-none focus:ring-2 focus:ring-[#F4A261] bg-white text-sm sm:text-base min-h-[44px];
+}
+
+textarea {
+  @apply min-h-[80px] sm:min-h-[100px] py-3 sm:py-4;
 }
 
 .stat-card {
-  @apply bg-white rounded-2xl p-6 border border-[#E8E1D8] shadow-sm;
+  @apply bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#E8E1D8] shadow-sm;
 }
 
+/* Mobile-first responsive grid with automatic columns */
 .grid-sweets {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid-sweets {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-sweets {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
 }
 
 header {
-  @apply flex items-center justify-between mb-6 border-b border-[#E8E1D8] pb-4;
+  @apply flex items-center justify-between mb-4 sm:mb-6 border-b border-[#E8E1D8] pb-4 sm:pb-4;
 }
 
 .badge {
-  @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium;
+  @apply inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium;
 }
 
 .badge-success {
@@ -95,4 +117,26 @@ header {
 
 .badge-error {
   @apply bg-[#FFEBEE] text-[#D84A4A];
+}
+
+/* Responsive typography */
+h1 {
+  @apply text-2xl sm:text-3xl md:text-4xl;
+}
+
+h2 {
+  @apply text-xl sm:text-2xl md:text-3xl;
+}
+
+h3 {
+  @apply text-lg sm:text-xl md:text-2xl;
+}
+
+/* Responsive spacing helpers */
+.space-y-mobile {
+  @apply space-y-3 sm:space-y-4 md:space-y-6;
+}
+
+.gap-mobile {
+  @apply gap-3 sm:gap-4 md:gap-6;
 }
