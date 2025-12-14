@@ -1,9 +1,9 @@
 # Credentials #
- ecommerce -    Email: patilishant97@gmail.com
-  (Users)       Password: Ishant@123
+ ecommerce (Users) -    Email: patilishant97@gmail.com
+                        Password: Ishant@123
 
- Managment -    Email: rohit123@gmail.com
-  (Admin)       Password: Ishant@123
+ Managment (Admin) -    Email: rohit123@gmail.com
+                        Password: Ishant@123
 
 
 
