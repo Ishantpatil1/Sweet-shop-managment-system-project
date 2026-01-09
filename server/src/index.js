@@ -16,7 +16,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+// CORS configuration
+const corsOptions = {
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:4001',
+    process.env.FRONTEND_URL || 'http://localhost:5173'
+  ],
+  credentials: true,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 // Serve uploads statically
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
